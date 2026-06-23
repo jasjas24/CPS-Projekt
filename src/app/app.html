@@ -16,11 +16,20 @@
 </nav>
 
 <header class="masthead">
-    <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
+    <video #bgVideo 
+           (ended)="handleVideoEnded(bgVideo)" 
+           muted 
+           playsinline 
+           class="masthead-video">
+        <source src="/assets/video/car_video.mp4" type="video/mp4">
+        Ihr Browser unterstützt kein HTML5-Video.
+    </video>
+
+    <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center masthead-content">
         <div class="d-flex justify-content-center">
             <div class="text-center">
-                <h1 class="mx-auto my-0">MOVEbotic</h1>
-                <h2 class="text-white-50 mx-auto mt-2 mb-5">Driven by Intelligence.</h2>
+                <h1 class="mx-auto my-0 text-uppercase">CPS-Manager</h1>
+                <h2 class="text-white-50 mx-auto mt-2 mb-5">Ein modernes Control-Dashboard für deine Cyber-Physischen Systeme – direkt angebunden an XAMPP.</h2>
                 <a class="btn btn-primary" href="#projects">Zu den Projekten</a>
             </div>
         </div>
