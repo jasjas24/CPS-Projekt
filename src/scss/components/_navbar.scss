@@ -45,6 +45,9 @@
         border-bottom: none;
         background-color: transparent;
         transition: background-color 0.3s ease-in-out;
+        Font-family: 'Nunito', sans-serif;
+        font-size: 1.5rem; /* Beispiel */
+        color: #333;       /* Beispiel, um Bootstrap-Farbe zu überschreiben */
 
         .navbar-brand {
             padding: 0.5rem 0;
@@ -66,7 +69,8 @@
         }
 
         &.navbar-shrink {
-            background-color: $white;
+            background-color: $gray-500;
+            opacity: 0.95;
 
             .navbar-brand {
                 color: $black;
@@ -76,19 +80,22 @@
                 color: $black;
                 padding: 1.5rem 1.5rem 1.25rem;
                 border-bottom: 0.25rem solid transparent;
+                Font-family: 'Nunito', sans-serif;
+                font-size: 1.5rem; /* Beispiel */
+                color: #333;       /* Beispiel, um Bootstrap-Farbe zu überschreiben */
 
                 &:hover {
-                    color: $primary;
+                    color: rgb(30, 88, 212);
                 }
 
                 &:active {
-                    color: darken($primary, 15%);
+                    color: darken(rgb(30, 88, 212), 15%);
                 }
 
                 &.active {
-                    color: $primary;
+                    color: rgb(30, 88, 212);
                     outline: none;
-                    border-bottom: 0.25rem solid $primary;
+                    border-bottom: 0.25rem solid rgb(30, 88, 212);
                 }
             }
         }
