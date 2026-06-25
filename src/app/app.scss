@@ -1,1 +1,94 @@
 @import "../scss/styles.scss";
+
+.brand-colon {
+  // 1. Die normale Textfarbe (falls der Browser den Trick nicht nutzt)
+  color: #007bff !important; 
+
+  // 2. WICHTIG: Den transparenten Fülleffekt von Grayscale überschreiben!
+  -webkit-text-fill-color: #007bff !important; 
+
+  // 3. WICHTIG: Den Hintergrund-Verlauf für dieses eine Zeichen abschalten
+  background: none !important; 
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  opacity: 0.6;
+}
+
+/* --- INTRO SPLASH SCREEN --- */
+.intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  // HIER GEÄNDERT: Schwarzer Hintergrund, da die Originalschrift weiß/silber ist!
+  background-color: #000000; 
+  z-index: 99999; 
+  
+  // Zentriert den Text absolut perfekt in der Mitte (wie auf der Hauptseite)
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  transition: opacity 1s ease-in-out;
+  opacity: 1;
+
+  &.fade-out {
+    opacity: 0;
+    pointer-events: none; 
+  }
+
+  .intro-text {
+    // 1. Die exakte Schriftart aus dem Grayscale-Template
+    font-family: $font-family-special;
+    margin: 0;
+
+    // 2. Die exakten Größen und Abstände der kleinen Bildschirme
+    font-size: 2.5rem;
+    line-height: 2.5rem;
+    letter-spacing: 0.8rem;
+
+    // 3. Der exakte Farbverlauf (Weiß zu Transparent) der Hauptseite
+    background: linear-gradient(fade-out($white, 0.1), fade-out($white, 1));
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    // --- RESPONSIVE GRÖSSEN (Exakt aus der masthead.scss kopiert) ---
+    
+    // Für mittlere Bildschirme (Tablets)
+    @include media-breakpoint-up(md) {
+        font-size: 4rem;
+        line-height: 4rem;
+    }
+
+    // Für große Bildschirme (Desktops)
+    @include media-breakpoint-up(lg) {
+        font-size: 6.5rem;
+        line-height: 6.5rem;
+    }
+  }
+
+  h2 {
+    max-width: 20rem;
+    font-size: 1rem;
+  }
+
+  @include media-breakpoint-up(lg) {
+    h2 {
+      max-width: 30rem;
+      font-size: 1.25rem;
+    }
+  }
+}
+
+/* Dein bestehender Doppelpunkt-Code bleibt unberührt! */
+.brand-colon {
+  color: #007bff !important; 
+  -webkit-text-fill-color: #007bff !important; 
+  background: none !important; 
+  background-clip: unset !important;
+  -webkit-background-clip: unset !important;
+  opacity: 0.6; 
+}
+

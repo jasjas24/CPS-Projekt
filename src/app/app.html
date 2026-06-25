@@ -1,4 +1,13 @@
-<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+<div class="intro-overlay" [class.fade-out]="!isIntroVisible()">
+    <div class="text-center">
+        <h1 class="intro-text">
+            MOVE<span class="brand-colon">:</span>{{ introSuffix() }}
+        </h1>
+        <h2 class="text-white-50 mx-auto mt-2 mb-5">Driven by Intelligence.</h2>
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav" [class.navbar-shrink]="isNavbarShrunk()">
     <div class="container px-4 px-lg-5">
         <a class="navbar-brand" href="#page-top">{{ title() }}</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
@@ -7,9 +16,15 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="#about">Über uns</a></li>
-                <li class="nav-item"><a class="nav-link" href="#projects">CPS-Projekte</a></li>
-                <li class="nav-item"><a class="nav-link" href="#signup">Kontakt</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#about" [class.active]="activeSection() === 'about'">Über uns</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#projects" [class.active]="activeSection() === 'projects'">CPS-Projekte</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#signup" [class.active]="activeSection() === 'signup'">Kontakt</a>
+                </li>
             </ul>
         </div>
     </div>
@@ -28,9 +43,8 @@
     <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center masthead-content">
         <div class="d-flex justify-content-center">
             <div class="text-center">
-                <h1 class="mx-auto my-0 text-uppercase">CPS-Manager</h1>
-                <h2 class="text-white-50 mx-auto mt-2 mb-5">Ein modernes Control-Dashboard für deine Cyber-Physischen Systeme – direkt angebunden an XAMPP.</h2>
-                <a class="btn btn-primary" href="#projects">Zu den Projekten</a>
+                <h1 class="mx-auto my-0">MOVE<span class="brand-colon">:</span>botics</h1>
+                <h2 class="text-white-50 mx-auto mt-2 mb-5">Driven by Intelligence.</h2>
             </div>
         </div>
     </div>
