@@ -1,6 +1,18 @@
-import { Component, inject, OnInit, signal, ViewChild, ElementRef, AfterViewInit, PLATFORM_ID, HostListener } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  PLATFORM_ID,
+  HostListener
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 interface Projekt {
   id: number;
@@ -11,22 +23,30 @@ interface Projekt {
 
 @Component({
   selector: 'app-root',
-  imports: [], 
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App implements OnInit, AfterViewInit {
-  
-  protected readonly title = signal('CPS-Projekt');
-  protected readonly projekte = signal<Projekt[]>([]);
+  private router = inject(Router);
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
 
-  // Signals für die Navbar-Zustände
+  readonly isLogin = signal(false);
+
+  protected readonly title = signal('CPS-Projekt');
+  protected readonly projekte = signal<Projekt[]>([]);
+
+  // Routing/Layout
+  readonly isHome = signal(true);
+  readonly isAppReady = signal(false);
+
+  // Navbar-Zustände
   readonly isNavbarShrunk = signal(false);
   readonly activeSection = signal('page-top');
 
-  // Signals für den Intro Splash Screen
+  // Intro Splash Screen
   protected readonly isIntroVisible = signal(true);
   protected readonly introSuffix = signal('');
 
@@ -34,77 +54,116 @@ export class App implements OnInit, AfterViewInit {
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0;
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-      // 1. Navbar-Hintergrund umschalten (nach 100 Pixeln Scrollweg)
-      this.isNavbarShrunk.set(scrollPosition > 100);
+    const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0;
 
-      // 2. Eigener, schlanker Scrollspy für die Menüpunkte
-      const sections = ['about', 'projects', 'signup'];
-      let current = 'page-top';
+    // Navbar-Hintergrund umschalten
+    this.isNavbarShrunk.set(scrollPosition > 100);
 
-      for (const sectionId of sections) {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          // 80 Pixel Puffer (z.B. für die Höhe der Navbar)
-          const elementTop = element.offsetTop - 80; 
-          if (scrollPosition >= elementTop) {
-            current = sectionId;
-          }
+    // Scrollspy nur für die Home-Seite sinnvoll
+    if (!this.isHome()) {
+      this.activeSection.set('page-top');
+      return;
+    }
+
+    if (this.isLogin()) {
+      this.isNavbarShrunk.set(false);
+      this.activeSection.set('page-top');
+      return;
+    }
+
+    const sections = ['about', 'projects', 'signup'];
+    let current = 'page-top';
+
+    for (const sectionId of sections) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        const elementTop = element.offsetTop - 80;
+        if (scrollPosition >= elementTop) {
+          current = sectionId;
         }
       }
-      this.activeSection.set(current);
     }
+
+    this.activeSection.set(current);
   }
 
   ngOnInit(): void {
-    // 1. Daten laden vom Backend
-    this.http.get<Projekt[]>('http://localhost/cps-api/get_projekte.php')
-      .subscribe({
-        next: (daten) => {
-          this.projekte.set(daten);
-        },
-        error: (fehler) => {
-          console.error('Fehler beim Laden der Daten aus der Datenbank:', fehler);
-        }
-      });
+  // Aktuelle Route direkt beim Start setzen
+  this.updateRouteState(this.router.url);
 
-    // 2. Intro-Animation steuern
-    if (isPlatformBrowser(this.platformId)) {
-      const words = ['fast', 'forward', 'better', 'botics'];
-      let currentIndex = -1;
+  // Bei jedem Routenwechsel aktualisieren
+  this.router.events
+    .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+    .subscribe((event) => {
+      this.updateRouteState(event.urlAfterRedirects);
+    });
 
-      const introInterval = setInterval(() => {
-        currentIndex++;
-        
-        if (currentIndex < words.length) {
-          this.introSuffix.set(words[currentIndex]);
-        }
+  // Daten laden vom Backend
+  this.http.get<Projekt[]>('http://localhost/cps-api/get_projekte.php')
+    .subscribe({
+      next: (daten) => {
+        this.projekte.set(daten);
+      },
+      error: (fehler) => {
+        console.error('Fehler beim Laden der Daten aus der Datenbank:', fehler);
+      }
+    });
 
-        if (currentIndex === words.length - 1) {
-          clearInterval(introInterval);
-          
-          setTimeout(() => {
-            this.isIntroVisible.set(false);
-          }, 1000); 
-        }
-      }, 500);
-    }
+  // Intro-Animation nur einmal pro Browser-Tab/Sitzung
+  if (!isPlatformBrowser(this.platformId)) {
+    this.isIntroVisible.set(false);
+    return;
   }
 
-  ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const video = this.videoRef?.nativeElement;
-      if (video) {
-        video.playbackRate = 0.5; 
+  const introAlreadyPlayed = sessionStorage.getItem('introPlayed');
 
-        setTimeout(() => {
-          video.play().catch(error => {
-            console.warn("Browser blockiert Autoplay. Klicke einmal auf die Seite.", error);
-          });
-        }, 500);
-      }
+  if (introAlreadyPlayed === 'true') {
+    this.isIntroVisible.set(false);
+    this.isAppReady.set(true);
+    return;
+  }
+
+  const words = ['fast', 'forward', 'better', 'botics'];
+  let currentIndex = -1;
+
+  const introInterval = setInterval(() => {
+    currentIndex++;
+
+    if (currentIndex < words.length) {
+      this.introSuffix.set(words[currentIndex]);
+    }
+
+    if (currentIndex === words.length - 1) {
+      clearInterval(introInterval);
+
+      setTimeout(() => {
+        this.isIntroVisible.set(false);
+        this.isAppReady.set(true);
+        sessionStorage.setItem('introPlayed', 'true');
+      }, 1000);
+    }
+  }, 500);
+}
+
+  
+ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    const video = this.videoRef?.nativeElement;
+    if (video) {
+      video.playbackRate = 0.5;
+
+      setTimeout(() => {
+        video.play().catch((error) => {
+          console.warn('Browser blockiert Autoplay. Klicke einmal auf die Seite.', error);
+        });
+      }, 500);
     }
   }
 
@@ -113,6 +172,21 @@ export class App implements OnInit, AfterViewInit {
       setTimeout(() => {
         video.play().catch(() => {});
       }, 3000);
+    }
+  }
+
+  private updateRouteState(url: string): void {
+    const cleanUrl = url.split('?')[0].split('#')[0];
+    this.isHome.set(cleanUrl === '/');
+    this.isLogin.set(cleanUrl === '/login');
+
+    if (!this.isHome()) {
+      this.isNavbarShrunk.set(true);
+      this.activeSection.set('page-top');
+    }
+
+    if (isPlatformBrowser(this.platformId)) {
+    document.body.classList.toggle('login-no-scroll', this.isLogin());
     }
   }
 }

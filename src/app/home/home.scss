@@ -1,10 +1,4 @@
-@import "../scss/styles.scss";
-
-:host {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+@import "../../scss/styles.scss";
 
 /* --- GLOBALE EINSTELLUNGEN --- */
 .brand-colon {
@@ -23,38 +17,12 @@
   top: 0;
   left: 0;
   width: 100%;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
   z-index: 1030; // Bootstrap Standard, bleibt über dem Inhalt
-}
-
-.navbar-home {
-  background: transparent;
-  box-shadow: none;
 }
 
 .navbar-logo {
   height: 60px;      // Passe die Größe hier an dein Logo an
   width: auto;
-}
-
-.navbar-inner {
-  background: rgba(20, 20, 20, 0.95);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-}
-
-.main-home {
-  flex: 1 1 auto;
-  padding-top: 0;
-}
-
-.main-inner {
-  flex: 1 1 auto;
-  padding-top: 90px;
-  background-color: #2f2f2f;
-}
-
-footer {
-  margin-top: auto;
 }
 
 /* --- INTRO SPLASH SCREEN --- */

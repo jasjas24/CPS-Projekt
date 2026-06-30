@@ -1,0 +1,80 @@
+<header class="masthead">
+    <video #bgVideo (ended)="handleVideoEnded(bgVideo)" muted playsinline class="masthead-video">
+        <source src="/assets/video/car_video.mp4" type="video/mp4">
+        Ihr Browser unterstützt kein HTML5-Video.
+    </video>
+    <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center masthead-content">
+        <div class="d-flex justify-content-center">
+            <div class="text-center">
+                <h1 class="mx-auto my-0">MOVE<span class="brand-colon">:</span>botics</h1>
+                <h2 class="text-white-50 mx-auto mt-2 mb-5">Driven by Intelligence.</h2>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="about-section text-center" id="about">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="text-white mb-4">Echte Datenbank-Power</h2>
+                <p class="text-white-50">Diese Oberfläche wird komplett dynamisch gesteuert. Sobald du in phpMyAdmin neue Datensätze anlegst, erscheinen sie vollautomatisch im untenstehenden Grid.</p>
+            </div>
+        </div>
+        <img class="img-fluid" src="/assets/img/Mitarbeiter2.png" alt="Dashboard Vorschau" />
+    </div>
+</section>
+
+<section class="projects-section bg-light" id="projects">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center text-center mb-5">
+            <div class="col-lg-8">
+                <h2 class="text-black mb-2">Aktuelle Systeme aus der MySQL-Datenbank</h2>
+                <p class="text-muted">Hier greift die Angular-Schleife auf deine XAMPP-Schnittstelle zu.</p>
+            </div>
+        </div>
+        <div class="row gx-0 mb-4 justify-content-center">
+            @for (projekt of projekte(); track projekt.id) {
+                <div class="col-12 col-md-6 col-lg-4 mb-4 px-2">
+                    <div class="card h-100 bg-black text-white shadow">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h4 class="card-title text-white mb-0">{{ projekt.name }}</h4>
+                                    <span class="badge" 
+                                        [class.bg-success]="projekt.status === 'Aktiv'"
+                                        [class.bg-warning]="projekt.status === 'In Planung'"
+                                        [class.bg-danger]="projekt.status === 'Wartung'">
+                                        {{ projekt.status }}
+                                    </span>
+                                </div>
+                                <p class="text-white-50 small">{{ projekt.beschreibung }}</p>
+                            </div>
+                            <div class="mt-4 border-top border-secondary pt-3">
+                                <button class="btn btn-primary w-100 btn-sm">Details anzeigen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            } @empty {
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning shadow">Es konnten keine Live-Daten geladen werden.</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="contact-section bg-black" id="signup">
+    <div class="container px-4 px-lg-5">
+        <div class="social d-flex justify-content-center">
+            <a class="mx-2" href="https://x.com/MOVE_botics" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
+            <a class="mx-2" href="https://www.facebook.com/share/1QZ6X6AEbX/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+            <a class="mx-2" href="https://tiktok.com/@movebotics" target="_blank" rel="noopener noreferrer"><i class="fab fa-tiktok"></i></a>
+            <a class="mx-2" href="https://www.instagram.com/move.botics?igsh=MTJpcHI3Y2h1bWExeg==" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+            <a class="mx-2" href="https://www.youtube.com/@movebotics" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+            <a class="mx-2" href="https://www.reddit.com/u/MOVE_botics/s/NCApkRveE1" target="_blank" rel="noopener noreferrer"><i class="fab fa-reddit"></i></a>
+            <a class="mx-2" href="https://github.com/MOVEbotics" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+        </div>
+    </div>
+</section>

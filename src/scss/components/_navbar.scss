@@ -60,7 +60,7 @@
             color: fade-out($white, 0.5);
 
             &:hover {
-                color: fade-out($white, 0.25);
+                color: rgb(30, 88, 212);
             }
 
             &:active {
@@ -99,5 +99,30 @@
                 }
             }
         }
+
+        // #mainNav.navbar-login {
+        //     background-color: transparent !important;
+        //     opacity: 1;
+
+        //     .navbar-brand {
+        //         color: $white !important;
+        //     }
+
+        //     .nav-link {
+        //         color: $white !important;
+
+        //         &:hover,
+        //         &:active,
+        //         &.active {
+        //         color: fade-out($white, 0.25) !important;
+        //         border-bottom: 0.25rem solid transparent;
+        //         }
+        //     }
+
+        //     .navbar-toggler {
+        //         color: $white !important;
+        //         border-color: fade-out($white, 0.4) !important;
+        //     }
+        // }
     }
 }

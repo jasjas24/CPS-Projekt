@@ -1,9 +1,6 @@
 // 
 // Styles
 // 
-
-@import 'bootstrap/dist/css/bootstrap.min.css';
-
 // Import variables
 @import "./variables.scss";
 
@@ -25,3 +22,6 @@
 @import "./sections/contact.scss";
 @import "./sections/footer.scss";
 
+body.login-no-scroll {
+  overflow: hidden;
+}
