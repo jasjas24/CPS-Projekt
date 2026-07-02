@@ -22,6 +22,8 @@
 @import "./sections/contact.scss";
 @import "./sections/footer.scss";
 
+
 body.login-no-scroll {
+  height: 100vh;
   overflow: hidden;
 }

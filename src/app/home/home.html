@@ -1,5 +1,5 @@
 <header class="masthead">
-    <video #bgVideo (ended)="handleVideoEnded(bgVideo)" muted playsinline class="masthead-video">
+    <video #bgVideo (ended)="handleVideoEnded(bgVideo)" [muted]="true" playsinline class="masthead-video">
         <source src="/assets/video/car_video.mp4" type="video/mp4">
         Ihr Browser unterstützt kein HTML5-Video.
     </video>

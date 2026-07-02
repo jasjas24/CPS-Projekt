@@ -3,9 +3,6 @@ import {
   inject,
   OnInit,
   signal,
-  ViewChild,
-  ElementRef,
-  AfterViewInit,
   PLATFORM_ID,
   HostListener
 } from '@angular/core';
@@ -28,7 +25,7 @@ interface Projekt {
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App implements OnInit, AfterViewInit {
+export class App implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
@@ -49,8 +46,6 @@ export class App implements OnInit, AfterViewInit {
   // Intro Splash Screen
   protected readonly isIntroVisible = signal(true);
   protected readonly introSuffix = signal('');
-
-  @ViewChild('bgVideo') videoRef!: ElementRef<HTMLVideoElement>;
 
   @HostListener('window:scroll', [])
   onWindowScroll(): void {
@@ -92,87 +87,61 @@ export class App implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-  // Aktuelle Route direkt beim Start setzen
-  this.updateRouteState(this.router.url);
+    // Aktuelle Route direkt beim Start setzen
+    this.updateRouteState(this.router.url);
 
-  // Bei jedem Routenwechsel aktualisieren
-  this.router.events
-    .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-    .subscribe((event) => {
-      this.updateRouteState(event.urlAfterRedirects);
-    });
+    // Bei jedem Routenwechsel aktualisieren
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event) => {
+        this.updateRouteState(event.urlAfterRedirects);
+      });
 
-  // Daten laden vom Backend
-  this.http.get<Projekt[]>('http://localhost/cps-api/get_projekte.php')
-    .subscribe({
-      next: (daten) => {
-        this.projekte.set(daten);
-      },
-      error: (fehler) => {
-        console.error('Fehler beim Laden der Daten aus der Datenbank:', fehler);
-      }
-    });
+    // Daten laden vom Backend
+    this.http.get<Projekt[]>('http://localhost/cps-api/get_projekte.php')
+      .subscribe({
+        next: (daten) => {
+          this.projekte.set(daten);
+        },
+        error: (fehler) => {
+          console.error('Fehler beim Laden der Projekte aus der Datenbank:', fehler);
+        }
+      });
 
-  // Intro-Animation nur einmal pro Browser-Tab/Sitzung
-  if (!isPlatformBrowser(this.platformId)) {
-    this.isIntroVisible.set(false);
-    return;
-  }
-
-  const introAlreadyPlayed = sessionStorage.getItem('introPlayed');
-
-  if (introAlreadyPlayed === 'true') {
-    this.isIntroVisible.set(false);
-    this.isAppReady.set(true);
-    return;
-  }
-
-  const words = ['fast', 'forward', 'better', 'botics'];
-  let currentIndex = -1;
-
-  const introInterval = setInterval(() => {
-    currentIndex++;
-
-    if (currentIndex < words.length) {
-      this.introSuffix.set(words[currentIndex]);
-    }
-
-    if (currentIndex === words.length - 1) {
-      clearInterval(introInterval);
-
-      setTimeout(() => {
-        this.isIntroVisible.set(false);
-        this.isAppReady.set(true);
-        sessionStorage.setItem('introPlayed', 'true');
-      }, 1000);
-    }
-  }, 500);
-}
-
-  
-ngAfterViewInit(): void {
+    // Intro-Animation nur einmal pro Browser-Tab/Sitzung
     if (!isPlatformBrowser(this.platformId)) {
+      this.isIntroVisible.set(false);
       return;
     }
 
-    const video = this.videoRef?.nativeElement;
-    if (video) {
-      video.playbackRate = 0.5;
+    const introAlreadyPlayed = sessionStorage.getItem('introPlayed');
 
-      setTimeout(() => {
-        video.play().catch((error) => {
-          console.warn('Browser blockiert Autoplay. Klicke einmal auf die Seite.', error);
-        });
-      }, 500);
+    if (introAlreadyPlayed === 'true') {
+      this.isIntroVisible.set(false);
+      this.isAppReady.set(true);
+      return;
     }
-  }
 
-  handleVideoEnded(video: HTMLVideoElement): void {
-    if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => {
-        video.play().catch(() => {});
-      }, 3000);
-    }
+    const words = ['fast', 'forward', 'better', 'botics'];
+    let currentIndex = -1;
+
+    const introInterval = setInterval(() => {
+      currentIndex++;
+
+      if (currentIndex < words.length) {
+        this.introSuffix.set(words[currentIndex]);
+      }
+
+      if (currentIndex === words.length - 1) {
+        clearInterval(introInterval);
+
+        setTimeout(() => {
+          this.isIntroVisible.set(false);
+          this.isAppReady.set(true);
+          sessionStorage.setItem('introPlayed', 'true');
+        }, 1000);
+      }
+    }, 500);
   }
 
   private updateRouteState(url: string): void {
@@ -186,7 +155,7 @@ ngAfterViewInit(): void {
     }
 
     if (isPlatformBrowser(this.platformId)) {
-    document.body.classList.toggle('login-no-scroll', this.isLogin());
+      document.body.classList.toggle('login-no-scroll', this.isLogin());
     }
   }
 }

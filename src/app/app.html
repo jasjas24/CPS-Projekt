@@ -7,7 +7,7 @@
     </div>
 </div>
 
-<div *ngIf="isAppReady()">
+<div class="app-shell" *ngIf="isAppReady()">
 <nav id="mainNav"class="navbar navbar-expand-lg navbar-light fixed-top" 
     [class.navbar-home]="isHome()"
     [class.navbar-login]="isLogin()"
@@ -31,11 +31,11 @@
     </div>
 </nav>
 
-<main [class.main-home]="isHome()" [class.main-inner]="!isHome()">
+<main [class.main-home]="isHome()" [class.main-login]="isLogin()" [class.main-inner]="!isHome() && !isLogin()">
   <router-outlet></router-outlet>
 </main>
 
-<footer class="footer bg-black small text-center text-white-50">
+<footer *ngIf="!isLogin()" class="footer bg-black small text-center text-white-50">
     <div class="container px-4 px-lg-5">Copyright &copy; CPS-Projekt Manager 2026</div>
 </footer>
 </div>

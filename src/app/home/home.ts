@@ -58,10 +58,10 @@ export class Home implements OnInit, AfterViewInit {
         const element = document.getElementById(sectionId);
         if (element) {
           // 80 Pixel Puffer (z.B. für die Höhe der Navbar)
-          const elementTop = element.offsetTop - 80; 
-          if (scrollPosition >= elementTop) {
-            current = sectionId;
-          }
+          // const elementTop = element.offsetTop - 80; 
+          // if (scrollPosition >= elementTop) {
+          //   current = sectionId;
+          // }
         }
       }
       this.activeSection.set(current);
@@ -107,19 +107,20 @@ export class Home implements OnInit, AfterViewInit {
     if (isPlatformBrowser(this.platformId)) {
       const video = this.videoRef?.nativeElement;
       if (video) {
-        video.playbackRate = 0.5; 
+        video.muted = true;        // explizit setzen – umgeht die Attribut-Unsicherheit
+        video.defaultMuted = true; // zusätzliche Absicherung
+        video.playbackRate = 0.5;
 
-        setTimeout(() => {
-          video.play().catch(error => {
-            console.warn("Browser blockiert Autoplay. Klicke einmal auf die Seite.", error);
-          });
-        }, 500);
+        video.play().catch(error => {
+          console.warn('Browser blockiert Autoplay trotz Stummschaltung.', error);
+        });
       }
     }
   }
 
   handleVideoEnded(video: HTMLVideoElement): void {
     if (isPlatformBrowser(this.platformId)) {
+      console.log('muted:', video.muted, 'readyState:', video.readyState);
       setTimeout(() => {
         video.play().catch(() => {});
       }, 3000);

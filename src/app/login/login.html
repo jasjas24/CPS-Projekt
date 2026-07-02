@@ -1,48 +1,214 @@
-<section class="login-section py-5">
-  <div class="container">
-    <div class="card shadow-sm">
-      <div class="row g-0 align-items-center">
-        <div class="col-lg-4 d-none d-lg-block">
-          <img
-            src="https://mdbootstrap.com/img/new/ecommerce/vertical/004.jpg"
-            alt="Login Bild"
-            class="img-fluid h-100 w-100 object-fit-cover rounded-start"
-          />
-        </div>
+<section class="login-section">
+  <div class="login-card">
+    <div class="login-tabs">
+      <button
+        type="button"
+        class="login-tab"
+        [class.active]="mode() === 'login'"
+        (click)="switchMode('login')"
+      >
+        Anmelden
+      </button>
+      <button
+        type="button"
+        class="login-tab"
+        [class.active]="mode() === 'register'"
+        (click)="switchMode('register')"
+      >
+        Registrieren
+      </button>
+    </div>
 
-        <div class="col-lg-8">
-          <div class="card-body p-4 p-md-5">
-            <form>
-              <div class="mb-4">
-                <label class="form-label" for="email">E-Mail</label>
-                <input type="email" id="email" class="form-control" />
-              </div>
+    <div class="alert alert-success py-2" *ngIf="submitSuccess()">{{ submitSuccess() }}</div>
 
-              <div class="mb-4">
-                <label class="form-label" for="password">Passwort</label>
-                <input type="password" id="password" class="form-control" />
-              </div>
+    <!-- LOGIN -->
+    <form *ngIf="mode() === 'login'" [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" novalidate>
+      <h2 class="login-title">Willkommen zurück</h2>
 
-              <div class="row mb-4">
-                <div class="col-md-6">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="remember" checked />
-                    <label class="form-check-label" for="remember">Angemeldet bleiben</label>
-                  </div>
-                </div>
-
-                <div class="col-md-6 text-md-end mt-2 mt-md-0">
-                  <a href="#">Passwort vergessen?</a>
-                </div>
-              </div>
-
-              <button type="submit" class="btn btn-primary w-100">
-                Anmelden
-              </button>
-            </form>
-          </div>
+      <div class="mb-3">
+        <label class="form-label" for="login-email">E-Mail</label>
+        <input
+          type="email"
+          id="login-email"
+          class="form-control"
+          formControlName="email"
+          placeholder="name@beispiel.de"
+          autocomplete="username"
+          [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        />
+        <div class="invalid-feedback" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          <span *ngIf="loginForm.get('email')?.errors?.['required']">Bitte gib deine E-Mail-Adresse ein.</span>
+          <span *ngIf="loginForm.get('email')?.errors?.['email']">Bitte gib eine gültige E-Mail-Adresse ein.</span>
         </div>
       </div>
-    </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="login-password">Passwort</label>
+        <input
+          type="password"
+          id="login-password"
+          class="form-control"
+          formControlName="password"
+          placeholder="Dein Passwort"
+          autocomplete="current-password"
+          [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+        />
+        <div class="invalid-feedback" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Bitte gib dein Passwort ein.
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="remember" formControlName="remember" />
+          <label class="form-check-label" for="remember">Angemeldet bleiben</label>
+        </div>
+        <a href="#" class="login-link">Passwort vergessen?</a>
+      </div>
+
+      <div class="alert alert-danger py-2" *ngIf="submitError()">{{ submitError() }}</div>
+
+      <button type="submit" class="btn btn-login w-100" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Wird geprüft…' : 'Anmelden' }}
+      </button>
+    </form>
+
+    <!-- REGISTRIERUNG -->
+    <form *ngIf="mode() === 'register'" [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" novalidate>
+      <h2 class="login-title">Konto erstellen</h2>
+
+      <div class="mb-3">
+        <label class="form-label" for="register-vorname">Vorname</label>
+        <input
+          type="text"
+          id="register-vorname"
+          class="form-control"
+          formControlName="vorname"
+          placeholder="Vorname"
+          autocomplete="given-name"
+          [class.is-invalid]="registerForm.get('vorname')?.invalid && registerForm.get('vorname')?.touched"
+        />
+        <div class="invalid-feedback" *ngIf="registerForm.get('vorname')?.invalid && registerForm.get('vorname')?.touched">
+          <span *ngIf="registerForm.get('vorname')?.errors?.['required']">Bitte gib deinen Vornamen ein.</span>
+          <span *ngIf="registerForm.get('vorname')?.errors?.['minlength']">Der Vorname muss mindestens 1 Zeichen lang sein.</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="register-nachname">Nachname</label>
+        <input
+          type="text"
+          id="register-nachname"
+          class="form-control"
+          formControlName="nachname"
+          placeholder="Nachname"
+          autocomplete="family-name"
+          [class.is-invalid]="registerForm.get('nachname')?.invalid && registerForm.get('nachname')?.touched"
+        />
+        <div class="invalid-feedback" *ngIf="registerForm.get('nachname')?.invalid && registerForm.get('nachname')?.touched">
+          <span *ngIf="registerForm.get('nachname')?.errors?.['required']">Bitte gib deinen Nachnamen ein.</span>
+          <span *ngIf="registerForm.get('nachname')?.errors?.['minlength']">Der Nachname muss mindestens 1 Zeichen lang sein.</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="register-email">E-Mail</label>
+        <input
+          type="email"
+          id="register-email"
+          class="form-control"
+          formControlName="email"
+          placeholder="name@beispiel.de"
+          autocomplete="email"
+          [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+        />
+        <div class="invalid-feedback" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          <span *ngIf="registerForm.get('email')?.errors?.['required']">Bitte gib deine E-Mail-Adresse ein.</span>
+          <span *ngIf="registerForm.get('email')?.errors?.['email']">Bitte gib eine gültige E-Mail-Adresse ein.</span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="register-kundennummer">Kundennummer</label>
+        <input
+          type="text"
+          id="register-kundennummer"
+          class="form-control"
+          formControlName="kundennummer"
+          placeholder="7-stellige Kundennummer"
+          autocomplete="off"
+          [class.is-invalid]="registerForm.get('kundennummer')?.invalid && registerForm.get('kundennummer')?.touched"
+        />
+        <div class="invalid-feedback" *ngIf="registerForm.get('kundennummer')?.invalid && registerForm.get('kundennummer')?.touched">
+          <span *ngIf="registerForm.get('kundennummer')?.errors?.['required']">Bitte gib deine Kundennummer ein.</span>
+          <span *ngIf="registerForm.get('kundennummer')?.errors?.['minlength'] || registerForm.get('kundennummer')?.errors?.['maxlength']">
+            Die Kundennummer muss 7-stellig sein.
+          </span>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="register-password">Passwort</label>
+        <input
+          type="password"
+          id="register-password"
+          class="form-control"
+          formControlName="password"
+          placeholder="Mind. 8 Zeichen, Groß-/Kleinbuchstaben, Zahl"
+          autocomplete="new-password"
+          [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+        />
+        <div class="invalid-feedback" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          <span *ngIf="registerForm.get('password')?.errors?.['required']">Bitte gib ein Passwort ein.</span>
+          <span *ngIf="registerForm.get('password')?.errors?.['minlength']">Das Passwort muss mindestens 8 Zeichen lang sein.</span>
+          <span *ngIf="registerForm.get('password')?.errors?.['pattern']">Das Passwort benötigt Groß-, Kleinbuchstaben und eine Zahl.</span>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label" for="register-confirm">Passwort bestätigen</label>
+        <input
+          type="password"
+          id="register-confirm"
+          class="form-control"
+          formControlName="confirmPassword"
+          placeholder="Passwort wiederholen"
+          autocomplete="new-password"
+          [class.is-invalid]="registerForm.get('confirmPassword')?.touched &&
+            (registerForm.get('confirmPassword')?.invalid || registerForm.errors?.['passwordsMismatch'])"
+        />
+        <div
+          class="invalid-feedback"
+          *ngIf="registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.errors?.['required']"
+        >
+          Bitte bestätige dein Passwort.
+        </div>
+        <div
+          class="invalid-feedback"
+          *ngIf="registerForm.get('confirmPassword')?.touched &&
+            !registerForm.get('confirmPassword')?.errors?.['required'] &&
+            registerForm.errors?.['passwordsMismatch']"
+        >
+          Die Passwörter stimmen nicht überein.
+        </div>
+      </div>
+
+      <div class="alert alert-danger py-2" *ngIf="submitError()">{{ submitError() }}</div>
+
+      <button type="submit" class="btn btn-login w-100" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Wird registriert…' : 'Registrieren' }}
+      </button>
+    </form>
+
+    <p class="login-switch-hint">
+      <ng-container *ngIf="mode() === 'login'">
+        Noch kein Konto?
+        <a href="#" (click)="switchMode('register'); $event.preventDefault()">Jetzt registrieren</a>
+      </ng-container>
+      <ng-container *ngIf="mode() === 'register'">
+        Schon registriert?
+        <a href="#" (click)="switchMode('login'); $event.preventDefault()">Zum Login</a>
+      </ng-container>
+    </p>
   </div>
 </section>
