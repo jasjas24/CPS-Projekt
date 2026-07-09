@@ -10,6 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from './services/auth';
 
 interface Projekt {
   id: number;
@@ -29,6 +30,7 @@ export class App implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
+  protected readonly authService = inject(AuthService);
 
   readonly isLogin = signal(false);
 
@@ -142,6 +144,15 @@ export class App implements OnInit {
         }, 1000);
       }
     }, 500);
+  }
+
+  onSettingsClick(): void {
+    this.router.navigate(['/profil']);
+  }
+
+  onLogoutClick(): void {
+    this.authService.logout();
+    this.router.navigate(['/']);
   }
 
   private updateRouteState(url: string): void {

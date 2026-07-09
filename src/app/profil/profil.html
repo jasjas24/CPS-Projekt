@@ -1,0 +1,15 @@
+<section class="profil-section">
+  <div class="profil-card">
+    <h1 class="profil-title">Mein Profil</h1>
+
+    <p class="profil-status">
+      Angemeldet als:
+      <strong>{{ authService.userRole() === 'mitarbeiter' ? 'Mitarbeiter' : 'Kunde' }}</strong>
+    </p>
+
+    <p class="profil-placeholder">
+      Hier entstehen als Nächstes die echten Profildaten (Name, E-Mail, Kundennummer bzw. Abteilung usw.),
+      sobald das Backend einen entsprechenden Endpunkt dafür bereitstellt.
+    </p>
+  </div>
+</section>

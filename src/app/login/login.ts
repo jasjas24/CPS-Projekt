@@ -97,6 +97,7 @@ export class Login {
           console.log('Login-Antwort:', response);
 
           if (response && response.success === true) {
+            this.authService.setLoginState(response.status);
             const statusText = response.status === 'mitarbeiter' ? 'Mitarbeiter' : 'Kunde';
             // Testphase: Aktuell wird nur der erkannte Status angezeigt,
             // noch keine echte Authentifizierung/Weiterleitung.
@@ -111,7 +112,7 @@ export class Login {
             'Verbindungsfehler. Bitte prüfe deine Daten oder die Serververbindung.'
           );
         },
-    });
+      });
   }
 
   onRegisterSubmit(): void {
@@ -123,7 +124,6 @@ export class Login {
       return;
     }
 
-    // confirmPassword wird nicht an das Backend gesendet.
     const { confirmPassword, ...kundenDaten } = this.registerForm.value;
 
     this.isSubmitting.set(true);
