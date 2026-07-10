@@ -1,4 +1,8 @@
-@import "../../scss/styles.scss";
+@import "../../scss/variables/_colors";
+@import "../../scss/variables/_typography";
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins/breakpoints";
 
 /* --- GLOBALE EINSTELLUNGEN --- */
 .brand-colon {

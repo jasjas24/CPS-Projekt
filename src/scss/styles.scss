@@ -1,6 +1,8 @@
 // 
 // Styles
 // 
+
+@use 'variables' as *;
 // Import variables
 @import "./variables.scss";
 
@@ -21,6 +23,8 @@
 @import "./sections/signup.scss";
 @import "./sections/contact.scss";
 @import "./sections/footer.scss";
+
+
 
 
 body.login-no-scroll {
