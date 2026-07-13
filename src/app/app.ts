@@ -30,22 +30,22 @@ export class App implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
+
   protected readonly authService = inject(AuthService);
 
   readonly isLogin = signal(false);
+  readonly isProfil = signal(false);
+  readonly isDashboard = signal(false);
 
   protected readonly title = signal('CPS-Projekt');
   protected readonly projekte = signal<Projekt[]>([]);
 
-  // Routing/Layout
   readonly isHome = signal(true);
   readonly isAppReady = signal(false);
 
-  // Navbar-Zustände
   readonly isNavbarShrunk = signal(false);
   readonly activeSection = signal('page-top');
 
-  // Intro Splash Screen
   protected readonly isIntroVisible = signal(true);
   protected readonly introSuffix = signal('');
 
@@ -57,49 +57,45 @@ export class App implements OnInit {
 
     const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0;
 
-    // Navbar-Hintergrund umschalten
-    this.isNavbarShrunk.set(scrollPosition > 100);
-
-    // Scrollspy nur für die Home-Seite sinnvoll
-    if (!this.isHome()) {
-      this.activeSection.set('page-top');
-      return;
-    }
-
     if (this.isLogin()) {
       this.isNavbarShrunk.set(false);
       this.activeSection.set('page-top');
       return;
     }
 
-    const sections = ['about', 'projects', 'signup'];
-    let current = 'page-top';
+    if (this.isHome()) {
+      this.isNavbarShrunk.set(scrollPosition > 100);
 
-    for (const sectionId of sections) {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        const elementTop = element.offsetTop - 80;
-        if (scrollPosition >= elementTop) {
-          current = sectionId;
+      const sections = ['about', 'projects', 'signup'];
+      let current = 'page-top';
+
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const elementTop = element.offsetTop - 80;
+          if (scrollPosition >= elementTop) {
+            current = sectionId;
+          }
         }
       }
+
+      this.activeSection.set(current);
+      return;
     }
 
-    this.activeSection.set(current);
+    this.isNavbarShrunk.set(scrollPosition > 100);
+    this.activeSection.set('page-top');
   }
 
   ngOnInit(): void {
-    // Aktuelle Route direkt beim Start setzen
     this.updateRouteState(this.router.url);
 
-    // Bei jedem Routenwechsel aktualisieren
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
         this.updateRouteState(event.urlAfterRedirects);
       });
 
-    // Daten laden vom Backend
     this.http.get<Projekt[]>('http://localhost/cps-api/get_projekte.php')
       .subscribe({
         next: (daten) => {
@@ -110,7 +106,6 @@ export class App implements OnInit {
         }
       });
 
-    // Intro-Animation nur einmal pro Browser-Tab/Sitzung
     if (!isPlatformBrowser(this.platformId)) {
       this.isIntroVisible.set(false);
       return;
@@ -157,11 +152,21 @@ export class App implements OnInit {
 
   private updateRouteState(url: string): void {
     const cleanUrl = url.split('?')[0].split('#')[0];
+
     this.isHome.set(cleanUrl === '/');
     this.isLogin.set(cleanUrl === '/login');
+    this.isProfil.set(cleanUrl === '/profil');
+    this.isDashboard.set(cleanUrl === '/dashboard');
 
-    if (!this.isHome()) {
-      this.isNavbarShrunk.set(true);
+    if (this.isLogin()) {
+      this.isNavbarShrunk.set(false);
+      this.activeSection.set('page-top');
+    } else {
+      const scrollPosition = isPlatformBrowser(this.platformId)
+        ? window.scrollY || document.documentElement.scrollTop || 0
+        : 0;
+
+      this.isNavbarShrunk.set(scrollPosition > 100);
       this.activeSection.set('page-top');
     }
 

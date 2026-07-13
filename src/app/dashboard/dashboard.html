@@ -1,1 +1,200 @@
-<p>dashboard works!</p>
+<div class="background-grid"></div>
+
+<main class="dashboard">
+  <section class="hero-section">
+    <div class="hero-text">
+      <div class="hero-head">
+        <div>
+          <p class="section-label">Betriebsmodus</p>
+          <h1>
+            AUTONOM
+            <span>Live Telemetrie</span>
+          </h1>
+        </div>
+
+        <div class="connection-badge">
+          <span class="connection-dot"></span>
+          <span>{{ connectionText() }}</span>
+        </div>
+      </div>
+
+      <p class="hero-description">
+        Zentrale Überwachung von Fahrzeugstatus, Sensorik, Energieversorgung und autonomer Navigation.
+      </p>
+
+      <div class="hero-info-grid">
+        <div class="hero-info-card">
+          <p>Betriebsmodus</p>
+          <strong>{{ dashboardData().mode }}</strong>
+        </div>
+
+        <div class="hero-info-card">
+          <p>Aktuelle Aktion</p>
+          <strong>{{ dashboardData().task }}</strong>
+        </div>
+
+        <div class="hero-info-card">
+          <p>Navigation</p>
+          <strong>{{ dashboardData().navigation }}</strong>
+        </div>
+
+        <div class="hero-info-card">
+          <p>Systemstatus</p>
+          <strong>Letztes Datenpaket: {{ lastUpdate() }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="vehicle-card">
+      <div class="vehicle-card-header">
+        <span>Fahrzeugvisualisierung</span>
+        <span class="live-label">Live</span>
+      </div>
+
+      <img src="assets/img/sherpa-fahrzeug.png" alt="Autonomes Fahrzeug" class="vehicle-image" />
+
+      <div class="vehicle-note lidar-note">
+        <span></span>
+        <strong>LIDAR</strong>
+        <small>Umfeldsensorik aktiv</small>
+      </div>
+
+      <div class="vehicle-note navigation-note">
+        <span></span>
+        <strong>Navigation</strong>
+        <small>Pfadüberwachung online</small>
+      </div>
+    </div>
+  </section>
+
+  <div class="dashboard-heading">
+    <div>
+      <p class="section-label">Systemstatus</p>
+      <h2>Live Telemetrieübersicht</h2>
+    </div>
+    <div class="last-update">
+      Letztes Update: <span>{{ lastUpdate() }}</span>
+    </div>
+  </div>
+
+  <section class="metrics-grid">
+    <article class="metric-card">
+      <p class="metric-label">Akkustand</p>
+      <div class="metric-value">{{ dashboardData().battery | number:'1.0-0' }}<small>%</small></div>
+      <div class="metric-detail">{{ dashboardData().voltage | number:'1.1-1' }} V Systemspannung</div>
+      <div class="battery-track">
+        <div class="battery-fill" [style.width]="batteryBarWidth"></div>
+      </div>
+    </article>
+
+    <article class="metric-card">
+      <p class="metric-label">Geschwindigkeit</p>
+      <div class="metric-value">{{ dashboardData().speed }}<small>%</small></div>
+      <div class="metric-detail">Antrieb aktiv</div>
+    </article>
+
+    <article class="metric-card">
+      <p class="metric-label">Lenkwinkel</p>
+      <div class="metric-value">{{ dashboardData().steering }}<small>Grad</small></div>
+      <div class="metric-detail">Servolenkung</div>
+    </article>
+
+    <article class="metric-card">
+      <p class="metric-label">Netzwerk Latenz</p>
+      <div class="metric-value">{{ dashboardData().latency }}<small>ms</small></div>
+      <div class="metric-detail">Interne Verbindung</div>
+    </article>
+  </section>
+
+  <section class="bottom-grid">
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="section-label">Sensorik</p>
+          <h2>Abstandsübersicht</h2>
+        </div>
+        <div class="status-badge blue-badge">Live Sensorfeld</div>
+      </div>
+
+      <div class="sensor-layout">
+        <div class="distance-box sensor-front-left">
+          <p>Vorne links</p>
+          <strong>{{ dashboardData().frontLeftDistance }}</strong>
+          <small>cm</small>
+        </div>
+
+        <div class="distance-box sensor-front">
+          <p>Vorne</p>
+          <strong>{{ dashboardData().frontDistance }}</strong>
+          <small>cm</small>
+        </div>
+
+        <div class="distance-box sensor-front-right">
+          <p>Vorne rechts</p>
+          <strong>{{ dashboardData().frontRightDistance }}</strong>
+          <small>cm</small>
+        </div>
+
+        <div class="distance-box sensor-left">
+          <p>Links</p>
+          <strong>{{ dashboardData().leftDistance }}</strong>
+          <small>cm</small>
+        </div>
+
+        <div class="radar">
+          <div class="radar-ring ring-one"></div>
+          <div class="radar-ring ring-two"></div>
+          <div class="radar-ring ring-three"></div>
+
+          <div class="radar-vehicle">CPS</div>
+
+          <div class="radar-dot dot-front"></div>
+          <div class="radar-dot dot-front-left"></div>
+          <div class="radar-dot dot-front-right"></div>
+          <div class="radar-dot dot-left"></div>
+          <div class="radar-dot dot-right"></div>
+          <div class="radar-dot dot-rear"></div>
+        </div>
+
+        <div class="distance-box sensor-right">
+          <p>Rechts</p>
+          <strong>{{ dashboardData().rightDistance }}</strong>
+          <small>cm</small>
+        </div>
+
+        <div class="distance-box sensor-rear">
+          <p>Hinten</p>
+          <strong>{{ dashboardData().rearDistance }}</strong>
+          <small>cm</small>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="section-label">Ereignisprotokoll</p>
+          <h2>Systemaktivität</h2>
+        </div>
+        <div class="status-badge">Aktiv</div>
+      </div>
+
+      <div class="current-status">
+        <span class="pulse-dot"></span>
+        <div>
+          <p>Aktueller Status</p>
+          <strong>{{ dashboardData().message }}</strong>
+        </div>
+      </div>
+
+      <ul class="log-list">
+        @for (log of systemLogs(); track log.time + log.message) {
+          <li>
+            <span>{{ log.time }}</span>
+            <div>{{ log.message }}</div>
+          </li>
+        }
+      </ul>
+    </article>
+  </section>
+</main>

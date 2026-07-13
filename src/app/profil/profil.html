@@ -1,15 +1,56 @@
 <section class="profil-section">
-  <div class="profil-card">
-    <h1 class="profil-title">Mein Profil</h1>
+  <div class="profil-wrapper">
+    <div class="profil-header">
+      <h1 class="profil-title">Mein Profil</h1>
+      <p class="profil-subtitle">
+        Persönliche Informationen und Kontodaten im Überblick.
+      </p>
+    </div>
 
-    <p class="profil-status">
-      Angemeldet als:
-      <strong>{{ authService.userRole() === 'mitarbeiter' ? 'Mitarbeiter' : 'Kunde' }}</strong>
-    </p>
+    <div class="profil-card">
+      <div class="profil-role-badge">
+        {{ authService.userRole() === 'mitarbeiter' ? 'Mitarbeiter' : 'Kunde' }}
+      </div>
 
-    <p class="profil-placeholder">
-      Hier entstehen als Nächstes die echten Profildaten (Name, E-Mail, Kundennummer bzw. Abteilung usw.),
-      sobald das Backend einen entsprechenden Endpunkt dafür bereitstellt.
-    </p>
+      <div class="profil-grid">
+        <div class="profil-item">
+          <span class="profil-label">Rolle</span>
+          <span class="profil-value">
+            {{ authService.userRole() === 'mitarbeiter' ? 'Mitarbeiter' : 'Kunde' }}
+          </span>
+        </div>
+
+        <div class="profil-item">
+          <span class="profil-label">Name</span>
+          <span class="profil-value">Max Mustermann</span>
+        </div>
+
+        <div class="profil-item">
+          <span class="profil-label">E-Mail</span>
+          <span class="profil-value profil-value-break">
+            max.mustermann@example.com
+          </span>
+        </div>
+
+        <div class="profil-item">
+          <span class="profil-label">
+            {{ authService.userRole() === 'mitarbeiter' ? 'Abteilung' : 'Kundennummer' }}
+          </span>
+          <span class="profil-value">
+            {{ authService.userRole() === 'mitarbeiter' ? 'Support / Technik' : 'KD-2026-001' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="profil-note">
+        Echte Profildaten können hier eingebunden werden, sobald dein Backend einen
+        passenden Endpunkt liefert.
+      </div>
+
+      <div class="profil-actions">
+        <button type="button" class="btn btn-login profil-btn">Profil bearbeiten</button>
+        <button type="button" class="btn btn-login profil-btn">Passwort ändern</button>
+      </div>
+    </div>
   </div>
 </section>

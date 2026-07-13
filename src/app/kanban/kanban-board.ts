@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-kanban',
   imports: [],
-  templateUrl: './kanban.html',
-  styleUrl: './kanban.scss',
+  templateUrl: './kanban-board.html',
+  styleUrl: './kanban-board.scss',
 })
 export class Kanban {}
