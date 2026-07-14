@@ -1,12 +1,18 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  QueryList,
+  ViewChildren,
+  computed,
+  inject,
+  signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  CdkDragDrop,
-  DragDropModule,
-  moveItemInArray,
-  transferArrayItem
-} from '@angular/cdk/drag-drop';
+import Sortable, { SortableEvent } from 'sortablejs';
 import {
   KanbanPriority,
   KanbanService,
@@ -24,13 +30,19 @@ type ColumnDef = {
 @Component({
   selector: 'app-kanban-board',
   standalone: true,
-  imports: [CommonModule, FormsModule, DragDropModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './kanban-board.html',
   styleUrl: './kanban-board.scss',
   host: { ngSkipHydration: 'true' }
 })
-export class KanbanBoardComponent implements OnInit {
+export class KanbanBoardComponent implements OnInit, AfterViewInit, OnDestroy {
   private kanbanService = inject(KanbanService);
+
+  @ViewChildren('sortableColumn')
+  sortableColumns!: QueryList<ElementRef<HTMLDivElement>>;
+
+  private sortableInstances: Sortable[] = [];
+  private viewInitialized = false;
 
   readonly columns: ColumnDef[] = [
     { key: 'todo', label: 'ToDo' },
@@ -56,6 +68,7 @@ export class KanbanBoardComponent implements OnInit {
 
   readonly groupedTasks = computed(() => {
     const all = this.tasks();
+
     return {
       todo: all.filter(task => task.status === 'todo').sort((a, b) => a.sort_order - b.sort_order),
       in_progress: all.filter(task => task.status === 'in_progress').sort((a, b) => a.sort_order - b.sort_order),
@@ -66,6 +79,20 @@ export class KanbanBoardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAll();
+  }
+
+  ngAfterViewInit(): void {
+    this.viewInitialized = true;
+
+    this.sortableColumns.changes.subscribe(() => {
+      queueMicrotask(() => this.setupSortables());
+    });
+
+    queueMicrotask(() => this.setupSortables());
+  }
+
+  ngOnDestroy(): void {
+    this.destroySortables();
   }
 
   loadAll(): void {
@@ -83,14 +110,21 @@ export class KanbanBoardComponent implements OnInit {
               next: (projekte) => {
                 this.projekte.set(projekte);
                 this.isLoading.set(false);
+                queueMicrotask(() => this.setupSortables());
               },
-              error: () => this.isLoading.set(false)
+              error: () => {
+                this.isLoading.set(false);
+              }
             });
           },
-          error: () => this.isLoading.set(false)
+          error: () => {
+            this.isLoading.set(false);
+          }
         });
       },
-      error: () => this.isLoading.set(false)
+      error: () => {
+        this.isLoading.set(false);
+      }
     });
   }
 
@@ -98,37 +132,63 @@ export class KanbanBoardComponent implements OnInit {
     return this.groupedTasks()[status];
   }
 
-  drop(event: CdkDragDrop<KanbanTask[]>, targetStatus: KanbanStatus): void {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-      event.container.data[event.currentIndex].status = targetStatus;
+  private setupSortables(): void {
+    if (!this.viewInitialized || this.isLoading() || !this.sortableColumns?.length) {
+      return;
     }
 
-    const updatedTasks = [...this.tasks()];
-    const affectedIds = event.container.data.map(task => task.id);
-    this.tasks.set(updatedTasks);
+    this.destroySortables();
 
-    const movedTask = event.container.data[event.currentIndex];
+    this.sortableColumns.forEach((columnRef) => {
+      const columnElement = columnRef.nativeElement;
 
-    event.container.data.forEach((task, index) => {
-      task.sort_order = index + 1;
+      const instance = Sortable.create(columnElement, {
+        group: 'kanban-board',
+        animation: 180,
+        draggable: '.task-card',
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        dragClass: 'sortable-drag',
+        swapThreshold: 0.65,
+        onStart: () => {
+          columnElement.classList.add('sortable-drag-over');
+        },
+        onEnd: (event: SortableEvent) => {
+          this.sortableColumns.forEach(ref => {
+            ref.nativeElement.classList.remove('sortable-drag-over');
+          });
+
+          const taskId = Number((event.item as HTMLElement).dataset['taskId']);
+          const targetColumn = event.to as HTMLElement;
+          const targetStatus = targetColumn.dataset['status'] as KanbanStatus;
+
+          const orderedTaskIds = Array.from(targetColumn.querySelectorAll('.task-card'))
+            .map((el) => Number((el as HTMLElement).dataset['taskId']))
+            .filter((id) => !Number.isNaN(id));
+
+          if (!taskId || !targetStatus || orderedTaskIds.length === 0) {
+            this.loadAll();
+            return;
+          }
+
+          this.kanbanService.moveTask({
+            taskId,
+            status: targetStatus,
+            orderedTaskIds
+          }).subscribe({
+            next: () => this.loadAll(),
+            error: () => this.loadAll()
+          });
+        }
+      });
+
+      this.sortableInstances.push(instance);
     });
+  }
 
-    this.kanbanService.moveTask({
-      taskId: movedTask.id,
-      status: targetStatus,
-      orderedTaskIds: affectedIds
-    }).subscribe({
-      next: () => this.loadAll(),
-      error: () => this.loadAll()
-    });
+  private destroySortables(): void {
+    this.sortableInstances.forEach(instance => instance.destroy());
+    this.sortableInstances = [];
   }
 
   createTask(): void {
@@ -150,18 +210,20 @@ export class KanbanBoardComponent implements OnInit {
           faellig_am: null
         });
         this.loadAll();
-      }
+      },
+      error: () => this.loadAll()
     });
   }
 
-  updateAssignee(task: KanbanTask, mitarbeiterId: string): void {
-    const id = mitarbeiterId ? Number(mitarbeiterId) : null;
+  updateAssignee(task: KanbanTask, mitarbeiterId: string | number | null): void {
+    const id = mitarbeiterId !== null && mitarbeiterId !== '' ? Number(mitarbeiterId) : null;
 
     this.kanbanService.updateTask({
       ...task,
       mitarbeiter_id: id
     }).subscribe({
-      next: () => this.loadAll()
+      next: () => this.loadAll(),
+      error: () => this.loadAll()
     });
   }
 
@@ -170,18 +232,23 @@ export class KanbanBoardComponent implements OnInit {
       ...task,
       prioritaet
     }).subscribe({
-      next: () => this.loadAll()
+      next: () => this.loadAll(),
+      error: () => this.loadAll()
     });
   }
 
   deleteTask(taskId: number): void {
     this.kanbanService.deleteTask(taskId).subscribe({
-      next: () => this.loadAll()
+      next: () => this.loadAll(),
+      error: () => this.loadAll()
     });
   }
 
   fullName(mitarbeiterId: number | null): string {
-    if (mitarbeiterId === null) return 'Nicht zugewiesen';
+    if (mitarbeiterId === null) {
+      return 'Nicht zugewiesen';
+    }
+
     const user = this.mitarbeiter().find(m => m.id === mitarbeiterId);
     return user ? `${user.vorname} ${user.nachname}` : 'Nicht zugewiesen';
   }

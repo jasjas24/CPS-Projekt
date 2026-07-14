@@ -43,7 +43,7 @@
         [ngModel]="draft().mitarbeiter_id"
         (ngModelChange)="draft.set({ ...draft(), mitarbeiter_id: $event ? +$event : null })"
       >
-        <option [ngValue]="null">Mitarbeiter wählen</option>
+        <option [ngValue]="null" disabled hidden>Mitarbeiter wählen</option>
         @for (person of mitarbeiter(); track person.id) {
           <option [value]="person.id">{{ person.vorname }} {{ person.nachname }}</option>
         }
@@ -54,7 +54,7 @@
         [ngModel]="draft().projekt_id"
         (ngModelChange)="draft.set({ ...draft(), projekt_id: $event ? +$event : null })"
       >
-        <option [ngValue]="null">Projekt wählen</option>
+        <option [ngValue]="null" disabled hidden>Projekt wählen</option>
         @for (projekt of projekte(); track projekt.id) {
           <option [value]="projekt.id">{{ projekt.name }}</option>
         }
@@ -84,7 +84,7 @@
   @if (isLoading()) {
     <div class="loading-state">Board wird geladen …</div>
   } @else {
-    <section class="kanban-board" cdkDropListGroup>
+    <section class="kanban-board">
       @for (column of columns; track column.key) {
         <div class="kanban-column">
           <div class="column-head">
@@ -93,13 +93,15 @@
           </div>
 
           <div
+            #sortableColumn
             class="column-body"
-            cdkDropList
-            [cdkDropListData]="getTaskList(column.key)"
-            (cdkDropListDropped)="drop($event, column.key)"
+            [attr.data-status]="column.key"
           >
             @for (task of getTaskList(column.key); track task.id) {
-              <article class="task-card" cdkDrag>
+              <article
+                class="task-card"
+                [attr.data-task-id]="task.id"
+              >
                 <div class="task-top">
                   <h3>{{ task.titel }}</h3>
                   <button type="button" class="delete-btn" (click)="deleteTask(task.id)">✕</button>
@@ -117,7 +119,7 @@
                       [ngModel]="task.mitarbeiter_id"
                       (ngModelChange)="updateAssignee(task, $event)"
                     >
-                      <option [ngValue]="null">Nicht zugewiesen</option>
+                      <option [ngValue]="null" disabled hidden>Nicht zugewiesen</option>
                       @for (person of mitarbeiter(); track person.id) {
                         <option [value]="person.id">{{ person.vorname }} {{ person.nachname }}</option>
                       }
