@@ -1,0 +1,249 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  color: #f5f5f5;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.05), transparent 35%),
+    linear-gradient(to bottom, #111111, #1a1a1a);
+}
+
+.kanban-shell {
+  width: min(1440px, 94%);
+  margin: 0 auto;
+  padding: 7rem 0 3rem;
+}
+
+.kanban-header {
+  margin-bottom: 2rem;
+}
+
+.eyebrow {
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
+  letter-spacing: 0.16rem;
+  text-transform: uppercase;
+}
+
+.kanban-header h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: 0.04rem;
+  text-transform: uppercase;
+}
+
+.intro {
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.7;
+}
+
+.task-create {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  color: #f5f5f5;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.03);
+  outline: none;
+}
+
+textarea {
+  margin-bottom: 1rem;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.create-btn,
+.delete-btn {
+  border: none;
+  cursor: pointer;
+}
+
+.create-btn {
+  padding: 0.85rem 1.25rem;
+  color: #101010;
+  font-weight: 700;
+  border-radius: 0.8rem;
+  background: #f1f1f1;
+}
+
+.loading-state {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(260px, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.kanban-column {
+  min-height: 500px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.column-head {
+  padding: 1rem 1rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.column-head h2 {
+  margin: 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06rem;
+}
+
+.column-head span {
+  min-width: 32px;
+  padding: 0.25rem 0.55rem;
+  text-align: center;
+  font-size: 0.82rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.column-body {
+  min-height: 420px;
+  padding: 1rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.task-card {
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 0.95rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.025));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+.task-top {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-top h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.task-description {
+  margin: 0 0 1rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.task-meta {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.task-meta label {
+  display: grid;
+  gap: 0.4rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.project-tag,
+.date-tag {
+  padding: 0.38rem 0.65rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cdk-drag-preview {
+  border-radius: 0.95rem;
+  background: #222;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.2;
+}
+
+.cdk-drag-animating,
+.task-card {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.column-body.cdk-drop-list-dragging .task-card:not(.cdk-drag-placeholder) {
+  transition: transform 200ms ease;
+}
+
+@media (max-width: 1200px) {
+  .kanban-board {
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .kanban-board,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kanban-shell {
+    padding-top: 6rem;
+  }
+}

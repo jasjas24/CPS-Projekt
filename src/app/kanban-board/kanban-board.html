@@ -1,0 +1,152 @@
+<section class="kanban-shell">
+  <header class="kanban-header">
+    <div>
+      <p class="eyebrow">Projektsteuerung</p>
+      <h1>Kanban Board</h1>
+      <p class="intro">Tasks verschieben, Mitarbeitern zuweisen und Status direkt im Board pflegen.</p>
+    </div>
+  </header>
+
+  <section class="task-create">
+    <div class="form-grid">
+      <input
+        type="text"
+        name="titel"
+        placeholder="Task-Titel"
+        [ngModel]="draft().titel"
+        (ngModelChange)="draft.set({ ...draft(), titel: $event })"
+      />
+
+      <select
+        name="status"
+        [ngModel]="draft().status"
+        (ngModelChange)="draft.set({ ...draft(), status: $event })"
+      >
+        <option value="todo">ToDo</option>
+        <option value="in_progress">In Progress</option>
+        <option value="review">Review</option>
+        <option value="done">Done</option>
+      </select>
+
+      <select
+        name="prioritaet"
+        [ngModel]="draft().prioritaet"
+        (ngModelChange)="draft.set({ ...draft(), prioritaet: $event })"
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+
+      <select
+        name="mitarbeiter"
+        [ngModel]="draft().mitarbeiter_id"
+        (ngModelChange)="draft.set({ ...draft(), mitarbeiter_id: $event ? +$event : null })"
+      >
+        <option [ngValue]="null">Mitarbeiter wählen</option>
+        @for (person of mitarbeiter(); track person.id) {
+          <option [value]="person.id">{{ person.vorname }} {{ person.nachname }}</option>
+        }
+      </select>
+
+      <select
+        name="projekt"
+        [ngModel]="draft().projekt_id"
+        (ngModelChange)="draft.set({ ...draft(), projekt_id: $event ? +$event : null })"
+      >
+        <option [ngValue]="null">Projekt wählen</option>
+        @for (projekt of projekte(); track projekt.id) {
+          <option [value]="projekt.id">{{ projekt.name }}</option>
+        }
+      </select>
+
+      <input
+        type="date"
+        name="faellig_am"
+        [ngModel]="draft().faellig_am"
+        (ngModelChange)="draft.set({ ...draft(), faellig_am: $event })"
+      />
+    </div>
+
+    <textarea
+      name="beschreibung"
+      rows="3"
+      placeholder="Beschreibung"
+      [ngModel]="draft().beschreibung"
+      (ngModelChange)="draft.set({ ...draft(), beschreibung: $event })"
+    ></textarea>
+
+    <button class="create-btn" type="button" (click)="createTask()">
+      Task anlegen
+    </button>
+  </section>
+
+  @if (isLoading()) {
+    <div class="loading-state">Board wird geladen …</div>
+  } @else {
+    <section class="kanban-board" cdkDropListGroup>
+      @for (column of columns; track column.key) {
+        <div class="kanban-column">
+          <div class="column-head">
+            <h2>{{ column.label }}</h2>
+            <span>{{ getTaskList(column.key).length }}</span>
+          </div>
+
+          <div
+            class="column-body"
+            cdkDropList
+            [cdkDropListData]="getTaskList(column.key)"
+            (cdkDropListDropped)="drop($event, column.key)"
+          >
+            @for (task of getTaskList(column.key); track task.id) {
+              <article class="task-card" cdkDrag>
+                <div class="task-top">
+                  <h3>{{ task.titel }}</h3>
+                  <button type="button" class="delete-btn" (click)="deleteTask(task.id)">✕</button>
+                </div>
+
+                @if (task.beschreibung) {
+                  <p class="task-description">{{ task.beschreibung }}</p>
+                }
+
+                <div class="task-meta">
+                  <label>
+                    Mitarbeiter
+                    <select
+                      name="mitarbeiter-{{ task.id }}"
+                      [ngModel]="task.mitarbeiter_id"
+                      (ngModelChange)="updateAssignee(task, $event)"
+                    >
+                      <option [ngValue]="null">Nicht zugewiesen</option>
+                      @for (person of mitarbeiter(); track person.id) {
+                        <option [value]="person.id">{{ person.vorname }} {{ person.nachname }}</option>
+                      }
+                    </select>
+                  </label>
+
+                  <label>
+                    Priorität
+                    <select
+                      name="prioritaet-{{ task.id }}"
+                      [ngModel]="task.prioritaet"
+                      (ngModelChange)="updatePriority(task, $event)"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="task-footer">
+                  <span class="project-tag">{{ task.projekt_name || 'Kein Projekt' }}</span>
+                  <span class="date-tag">{{ task.faellig_am || 'Offen' }}</span>
+                </div>
+              </article>
+            }
+          </div>
+        </div>
+      }
+    </section>
+  }
+</section>
