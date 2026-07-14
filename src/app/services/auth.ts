@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -8,8 +9,15 @@ import { Observable } from 'rxjs';
 export class AuthService {
 
   private baseUrl = 'http://localhost/cps-api';
+  private platformId = inject(PLATFORM_ID);
 
-  constructor(private http: HttpClient) {}
+  readonly isLoggedIn = signal<boolean>(false);
+  readonly userRole = signal<string | null>(null);
+  readonly currentUser = signal<any | null>(null);
+
+  constructor(private http: HttpClient) {
+    this.restoreFromStorage();
+  }
 
   registerKunde(kundenDaten: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/register.php`, kundenDaten);
@@ -19,19 +27,49 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/login.php`, loginDaten);
   }
 
-  // Signals für den globalen Zustand
-  readonly isLoggedIn = signal<boolean>(false);
-  readonly userRole = signal<string | null>(null);
+  private restoreFromStorage(): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-  // Methode, die nach erfolgreichem Backend-Abruf aufgerufen wird
-  setLoginState(role: string) {
+    const role = localStorage.getItem('cps_auth_role');
+    if (!role) {
+      return;
+    }
+
+    const userRaw = localStorage.getItem('cps_auth_user');
+    const user = userRaw ? JSON.parse(userRaw) : null;
+
     this.userRole.set(role);
     this.isLoggedIn.set(true);
+    this.currentUser.set(user);
+  }
+
+  setLoginState(role: string, user: any = null) {
+    this.userRole.set(role);
+    this.isLoggedIn.set(true);
+    this.currentUser.set(user);
+
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('cps_auth_role', role);
+      if (user) {
+        localStorage.setItem('cps_auth_user', JSON.stringify(user));
+      }
+    }
   }
 
   logout() {
     this.userRole.set(null);
     this.isLoggedIn.set(false);
-    // Hier ggf. Session-Tokens löschen
+    this.currentUser.set(null);
+
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('cps_auth_role');
+      localStorage.removeItem('cps_auth_user');
+    }
+  }
+
+  changePassword(payload: { email: string; newPassword: string; userType: string }): Observable<any> {
+    return this.http.post(`${this.baseUrl}/change-password.php`, payload);
   }
 }

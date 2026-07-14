@@ -37,36 +37,56 @@
       <div class="collapse navbar-collapse" id="navbarResponsive">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link" href="#about" [class.active]="activeSection() === 'about'">Über uns</a>
+            <a class="nav-link" routerLink="/" fragment="about" [class.active]="activeSection() === 'about'">Über uns</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#projects" [class.active]="activeSection() === 'projects'">CPS-Projekte</a>
+            <a class="nav-link" routerLink="/" fragment="projects" [class.active]="activeSection() === 'projects'">CPS-Projekte</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#signup" [class.active]="activeSection() === 'signup'">Kontakt</a>
+            <a class="nav-link" routerLink="/" fragment="signup" [class.active]="activeSection() === 'signup'">Kontakt</a>
           </li>
 
           @if (!authService.isLoggedIn()) {
             <li class="nav-item">
               <a class="nav-link" routerLink="/login">Intranet</a>
             </li>
-          } @else if (authService.userRole() === 'mitarbeiter') {
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/dashboard">Dashboard</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/kanban">Kanban</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" routerLink="/profil" title="Profil">
-                <i class="fas fa-user"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" (click)="onLogoutClick()" style="cursor: pointer" title="Logout">
-                <i class="fas fa-sign-out-alt"></i>
-              </a>
-            </li>
+          }
+
+          @if (authService.isLoggedIn()) {
+            @if (authService.userRole() === 'mitarbeiter') {
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/dashboard">Dashboard</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/kanban">Kanban</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/profil" title="Profil">
+                  <i class="fas fa-user"></i>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" (click)="onLogoutClick()" style="cursor: pointer" title="Logout">
+                  <i class="fas fa-sign-out-alt"></i>
+                </a>
+              </li>
+            }
+
+            @if (authService.userRole() === 'kunde') {
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/kanban">meine Produkte</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" routerLink="/profil" title="Profil">
+                  <i class="fas fa-user"></i>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" (click)="onLogoutClick()" style="cursor: pointer" title="Logout">
+                  <i class="fas fa-sign-out-alt"></i>
+                </a>
+              </li>
+            }
           }
         </ul>
       </div>
