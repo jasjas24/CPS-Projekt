@@ -13,9 +13,6 @@ import { finalize } from 'rxjs/operators';
 
 type AuthMode = 'login' | 'register' | 'forcePasswordChange';
 
-/**
- * Prüft auf FormGroup-Ebene, ob Passwort und Passwort-Bestätigung übereinstimmen.
- */
 function passwordsMatchValidator(group: AbstractControl): ValidationErrors | null {
   const password = group.get('password')?.value;
   const confirmPassword = group.get('confirmPassword')?.value;
@@ -50,11 +47,8 @@ export class Login {
   readonly submitSuccess = signal<string | null>(null);
   readonly isSubmitting = signal(false);
 
-  // Zwischenspeicher für den gerade eingeloggten Mitarbeiter
   private pendingMitarbeiter: any = null;
 
-  // Login identifiziert den Nutzer ausschließlich über die E-Mail-Adresse.
-  // Ob es sich um einen Mitarbeiter oder Kunden handelt, entscheidet das Backend.
   readonly loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
@@ -72,7 +66,6 @@ export class Login {
         [
           Validators.required,
           Validators.minLength(8),
-          // mind. ein Klein-, ein Großbuchstabe und eine Ziffer
           Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
         ],
       ],
@@ -118,33 +111,52 @@ export class Login {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: (response: any) => {
-          console.log('Login-Antwort:', response);
-
-          if (response && response.success === true) {
-            // Prüfe, ob Mitarbeiter sein Passwort ändern muss
+          if (response?.success === true) {
             if (response.status === 'mitarbeiter' && response.requiresPasswordChange === true) {
               this.pendingMitarbeiter = response.user;
               this.switchMode('forcePasswordChange');
               return;
             }
 
-            this.authService.setLoginState(response.status, response.user);
-            if (response.status === 'mitarbeiter') {
-              this.submitSuccess.set('Erfolgreich als Mitarbeiter angemeldet!');
-            } else {
-              this.submitSuccess.set('Willkommen zurück!');
-            }
+            // Profildaten laden und im Service speichern
+            this.loadUserProfile(response.user.email, response.status);
           } else {
             this.submitError.set(response?.message || 'Kein Nutzer mit dieser E-Mail-Adresse gefunden.');
           }
         },
         error: (err: any) => {
           console.error('Netzwerkfehler beim Login:', err);
-          this.submitError.set(
-            'Verbindungsfehler. Bitte prüfe deine Daten oder die Serververbindung.'
-          );
+          this.submitError.set('Verbindungsfehler. Bitte prüfe deine Daten oder die Serververbindung.');
         },
       });
+  }
+
+  /**
+   * Lädt das vollständige Profil aus der Datenbank und speichert es im AuthService.
+   */
+  private loadUserProfile(email: string, userType: string): void {
+    this.authService.getProfile({ email, userType }).subscribe({
+      next: (profileResponse: any) => {
+        if (profileResponse?.success === true) {
+          this.authService.setLoginState(userType, profileResponse.data);
+
+          if (userType === 'mitarbeiter') {
+            this.submitSuccess.set('Erfolgreich als Mitarbeiter angemeldet!');
+          } else {
+            this.submitSuccess.set('Willkommen zurück!');
+          }
+        } else {
+          // Fallback: Nur Rolle speichern, ohne Profildaten
+          this.authService.setLoginState(userType, null);
+          this.submitSuccess.set('Erfolgreich angemeldet!');
+        }
+      },
+      error: (err: any) => {
+        // Fallback bei Profil-Ladefehler
+        this.authService.setLoginState(userType, null);
+        this.submitSuccess.set('Erfolgreich angemeldet!');
+      },
+    });
   }
 
   onForcePasswordSubmit(): void {
@@ -169,11 +181,8 @@ export class Login {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: (response: any) => {
-          if (response && response.success === true) {
-            // Nach erfolgreicher Änderung: normal einloggen
-            this.authService.setLoginState('mitarbeiter', this.pendingMitarbeiter);
-            this.submitSuccess.set('Passwort erfolgreich geändert. Willkommen!');
-            this.switchMode('login');
+          if (response?.success === true) {
+            this.loadUserProfile(this.pendingMitarbeiter.email, 'mitarbeiter');
             this.forcePasswordForm.reset();
             this.pendingMitarbeiter = null;
           } else {
@@ -205,9 +214,7 @@ export class Login {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: (response: any) => {
-          if (response && response.success === true) {
-            console.log('Erfolgreich registriert:', response);
-
+          if (response?.success === true) {
             const vorname = this.registerForm.get('vorname')?.value;
 
             this.registerForm.reset({
@@ -220,21 +227,14 @@ export class Login {
             });
 
             this.switchMode('login');
-            this.submitSuccess.set(
-              `Willkommen, ${vorname}! Deine Registrierung war erfolgreich – du kannst dich jetzt anmelden.`
-            );
+            this.submitSuccess.set(`Willkommen, ${vorname}! Deine Registrierung war erfolgreich.`);
           } else {
-            console.warn('Datenbank- oder Logikfehler im Backend:', response);
-            this.submitError.set(
-              response.message || 'Registrierung fehlgeschlagen. Möglicherweise existiert dieser Nutzer bereits.'
-            );
+            this.submitError.set(response?.message || 'Registrierung fehlgeschlagen.');
           }
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Netzwerkfehler bei der Registrierung:', err);
-          this.submitError.set(
-            'Verbindungsfehler. Bitte prüfe deine Daten oder die Serververbindung zu XAMPP.'
-          );
+          this.submitError.set('Verbindungsfehler. Bitte prüfe deine Daten oder die Serververbindung.');
         },
       });
   }

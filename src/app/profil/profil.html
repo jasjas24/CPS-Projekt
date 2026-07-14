@@ -7,50 +7,143 @@
       </p>
     </div>
 
-    <div class="profil-card">
-      <div class="profil-role-badge">
-        {{ authService.userRole() === 'mitarbeiter' ? 'Mitarbeiter' : 'Kunde' }}
-      </div>
+    @if (isLoading()) {
+      <div class="profil-loading">Profil wird geladen …</div>
+    }
 
-      <div class="profil-grid">
-        <div class="profil-item">
-          <span class="profil-label">Rolle</span>
-          <span class="profil-value">
-            {{ authService.userRole() === 'mitarbeiter' ? 'Mitarbeiter' : 'Kunde' }}
-          </span>
+    @if (loadError()) {
+      <div class="profil-alert profil-alert-error">
+        {{ loadError() }}
+        <button class="profil-retry-btn" (click)="loadProfile()">Erneut versuchen</button>
+      </div>
+    }
+
+    @if (!isLoading() && authService.currentUser()) {
+      <div class="profil-card">
+        <!-- Persönliche Daten -->
+        <div class="profil-section-title">
+          <i class="fas fa-id-card"></i>
+          Persönliche Daten
         </div>
 
-        <div class="profil-item">
-          <span class="profil-label">Name</span>
-          <span class="profil-value">Max Mustermann</span>
+        <div class="profil-grid">
+          <div class="profil-item">
+            <span class="profil-label">Vorname</span>
+            <span class="profil-value">{{ authService.currentUser()!.vorname }}</span>
+          </div>
+
+          <div class="profil-item">
+            <span class="profil-label">Nachname</span>
+            <span class="profil-value">{{ authService.currentUser()!.nachname }}</span>
+          </div>
+
+          <div class="profil-item">
+            <span class="profil-label">E-Mail</span>
+            <span class="profil-value profil-value-break">{{ userEmail() }}</span>
+          </div>
+
+          <div class="profil-item">
+            <span class="profil-label">Mitglied seit</span>
+            <span class="profil-value">{{ userSince() | date:'dd.MM.yyyy' }}</span>
+          </div>
         </div>
 
-        <div class="profil-item">
-          <span class="profil-label">E-Mail</span>
-          <span class="profil-value profil-value-break">
-            max.mustermann@example.com
-          </span>
+        <!-- Mitarbeiter-spezifisch -->
+        @if (isMitarbeiter(authService.currentUser())) {
+          <div class="profil-section-title">
+            <i class="fas fa-briefcase"></i>
+            Mitarbeiter-Informationen
+          </div>
+
+          <div class="profil-grid">
+            <div class="profil-item">
+              <span class="profil-label">Rolle</span>
+              <span class="profil-value">{{ mitarbeiterRolle() }}</span>
+            </div>
+          </div>
+
+          <!-- Admin-Bereich (nur für Administratoren) -->
+          @if (authService.isAdmin()) {
+            <div class="profil-admin-banner">
+              <i class="fas fa-shield-alt"></i>
+              <span>Administrator-Zugang</span>
+            </div>
+
+            <div class="profil-section-title">
+              <i class="fas fa-cogs"></i>
+              Verwaltung
+            </div>
+
+            <div class="profil-admin-grid">
+              <div class="profil-admin-card" (click)="onAdminUsers()">
+                <i class="fas fa-users"></i>
+                <span>Nutzer verwalten</span>
+              </div>
+              <div class="profil-admin-card" (click)="onAdminProjects()">
+                <i class="fas fa-folder-open"></i>
+                <span>Projekte verwalten</span>
+              </div>
+              <div class="profil-admin-card" (click)="onAdminKanban()">
+                <i class="fas fa-tasks"></i>
+                <span>Kanban-Tasks</span>
+              </div>
+              <div class="profil-admin-card" (click)="onAdminLogs()">
+                <i class="fas fa-history"></i>
+                <span>Login-Logs</span>
+              </div>
+            </div>
+          }
+        }
+
+        <!-- Kunden-spezifisch -->
+        @if (isKunde(authService.currentUser())) {
+          <div class="profil-section-title">
+            <i class="fas fa-shopping-bag"></i>
+            Kunden-Informationen
+          </div>
+
+          <div class="profil-grid">
+            <div class="profil-item">
+              <span class="profil-label">Kundennummer</span>
+              <span class="profil-value">{{ kundennummer() }}</span>
+            </div>
+
+            <div class="profil-item">
+              <span class="profil-label">Registrierungsstatus</span>
+              <span class="profil-value">
+                @if (isRegistriert()) {
+                  <span class="profil-status-badge profil-status-ok">Registriert</span>
+                } @else {
+                  <span class="profil-status-badge profil-status-pending">Ausstehend</span>
+                }
+              </span>
+            </div>
+          </div>
+
+          <div class="profil-section-title">
+            <i class="fas fa-box"></i>
+            Meine Bestellungen
+          </div>
+
+          <div class="profil-empty-state">
+            <i class="fas fa-box-open"></i>
+            <p>Noch keine Bestellungen vorhanden.</p>
+          </div>
+        }
+
+        <!-- Aktionen -->
+        <div class="profil-actions">
+          <button type="button" class="profil-btn profil-btn-primary" (click)="onEditProfile()">
+            <i class="fas fa-edit"></i> Profil bearbeiten
+          </button>
+          <button type="button" class="profil-btn profil-btn-secondary" (click)="onChangePassword()">
+            <i class="fas fa-key"></i> Passwort ändern
+          </button>
+          <button type="button" class="profil-btn profil-btn-danger" (click)="onLogout()">
+            <i class="fas fa-sign-out-alt"></i> Abmelden
+          </button>
         </div>
-
-        <div class="profil-item">
-          <span class="profil-label">
-            {{ authService.userRole() === 'mitarbeiter' ? 'Abteilung' : 'Kundennummer' }}
-          </span>
-          <span class="profil-value">
-            {{ authService.userRole() === 'mitarbeiter' ? 'Support / Technik' : 'KD-2026-001' }}
-          </span>
-        </div>
       </div>
-
-      <div class="profil-note">
-        Echte Profildaten können hier eingebunden werden, sobald dein Backend einen
-        passenden Endpunkt liefert.
-      </div>
-
-      <div class="profil-actions">
-        <button type="button" class="btn btn-login profil-btn">Profil bearbeiten</button>
-        <button type="button" class="btn btn-login profil-btn">Passwort ändern</button>
-      </div>
-    </div>
+    }
   </div>
 </section>
