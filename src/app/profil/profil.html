@@ -50,31 +50,33 @@
 
         <!-- Mitarbeiter-spezifisch -->
         @if (isMitarbeiter(authService.currentUser())) {
-          <div class="profil-section-title">
-            <i class="fas fa-briefcase"></i>
-            Mitarbeiter-Informationen
-          </div>
 
-          <div class="profil-grid">
-            <div class="profil-item">
-              <span class="profil-label">Rolle</span>
-              <span class="profil-value">{{ mitarbeiterRolle() }}</span>
-            </div>
-          </div>
-
-          <!-- Admin-Bereich (nur für Administratoren) -->
+          <!-- Admin-Banner (nur Administrator) -->
           @if (authService.isAdmin()) {
             <div class="profil-admin-banner">
               <i class="fas fa-shield-alt"></i>
               <span>Administrator-Zugang</span>
             </div>
+          }
 
-            <div class="profil-section-title">
-              <i class="fas fa-cogs"></i>
-              Verwaltung
+          <!-- Schnellzugriff (alle Mitarbeiter) -->
+          <div class="profil-section-title">
+            <i class="fas fa-th-large"></i>
+            Schnellzugriff
+          </div>
+
+          <div class="profil-admin-grid">
+            <div class="profil-admin-card" (click)="onAdminKanban()">
+              <i class="fas fa-tasks"></i>
+              <span>Kanban-Board</span>
             </div>
 
-            <div class="profil-admin-grid">
+            <div class="profil-admin-card" (click)="onShowDashboard()">
+              <i class="fas fa-dashboard"></i>
+              <span>Dashboard</span>
+            </div>
+
+            @if (authService.isAdmin()) {
               <div class="profil-admin-card" (click)="onAdminUsers()">
                 <i class="fas fa-users"></i>
                 <span>Nutzer verwalten</span>
@@ -83,16 +85,12 @@
                 <i class="fas fa-folder-open"></i>
                 <span>Projekte verwalten</span>
               </div>
-              <div class="profil-admin-card" (click)="onAdminKanban()">
-                <i class="fas fa-tasks"></i>
-                <span>Kanban-Tasks</span>
-              </div>
               <div class="profil-admin-card" (click)="onAdminLogs()">
                 <i class="fas fa-history"></i>
                 <span>Login-Logs</span>
               </div>
-            </div>
-          }
+            }
+          </div>
         }
 
         <!-- Kunden-spezifisch -->

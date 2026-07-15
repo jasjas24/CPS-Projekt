@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../services/auth';
+import { Router } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -46,6 +47,8 @@ export class Login {
   readonly submitError = signal<string | null>(null);
   readonly submitSuccess = signal<string | null>(null);
   readonly isSubmitting = signal(false);
+  private readonly router = inject(Router);
+
 
   private pendingMitarbeiter: any = null;
 
@@ -118,8 +121,8 @@ export class Login {
               return;
             }
 
-            // Profildaten laden und im Service speichern
-            this.loadUserProfile(response.user.email, response.status);
+            // Profildaten laden UND DANN navigieren
+            this.loadUserProfileAndNavigate(response.user.email, response.status);
           } else {
             this.submitError.set(response?.message || 'Kein Nutzer mit dieser E-Mail-Adresse gefunden.');
           }
@@ -134,27 +137,25 @@ export class Login {
   /**
    * Lädt das vollständige Profil aus der Datenbank und speichert es im AuthService.
    */
-  private loadUserProfile(email: string, userType: string): void {
+/**
+ * Lädt das Profil und navigiert erst danach zur Profilseite.
+ */
+  private loadUserProfileAndNavigate(email: string, userType: string): void {
     this.authService.getProfile({ email, userType }).subscribe({
       next: (profileResponse: any) => {
         if (profileResponse?.success === true) {
           this.authService.setLoginState(userType, profileResponse.data);
-
-          if (userType === 'mitarbeiter') {
-            this.submitSuccess.set('Erfolgreich als Mitarbeiter angemeldet!');
-          } else {
-            this.submitSuccess.set('Willkommen zurück!');
-          }
         } else {
-          // Fallback: Nur Rolle speichern, ohne Profildaten
+          // Fallback: Ohne Profildaten einloggen
           this.authService.setLoginState(userType, null);
-          this.submitSuccess.set('Erfolgreich angemeldet!');
         }
+        // Navigation erst nach dem Laden (oder Fallback)
+        this.router.navigate(['/profil']);
       },
       error: (err: any) => {
-        // Fallback bei Profil-Ladefehler
+        console.error('Profil-Ladefehler:', err);
         this.authService.setLoginState(userType, null);
-        this.submitSuccess.set('Erfolgreich angemeldet!');
+        this.router.navigate(['/profil']);
       },
     });
   }
@@ -182,7 +183,7 @@ export class Login {
       .subscribe({
         next: (response: any) => {
           if (response?.success === true) {
-            this.loadUserProfile(this.pendingMitarbeiter.email, 'mitarbeiter');
+            this.loadUserProfileAndNavigate(this.pendingMitarbeiter.email, 'mitarbeiter');
             this.forcePasswordForm.reset();
             this.pendingMitarbeiter = null;
           } else {

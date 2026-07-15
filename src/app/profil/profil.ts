@@ -146,6 +146,10 @@ export class Profil implements OnInit {
     alert('Passwort ändern – kommt bald.');
   }
 
+  onShowDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
   onLogout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
