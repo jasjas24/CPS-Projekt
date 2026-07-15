@@ -25,7 +25,6 @@
     }
 
     .social {
-        margin-top: 5rem;
 
         a {
             text-align: center;
@@ -37,7 +36,7 @@
             color: fade-out($white, 0.7);
 
             &:hover {
-                color: fade-out($white, 0.5);
+                color: fade-out($blue, 0.5);
             }
 
             &:active {

@@ -65,6 +65,106 @@
     </div>
 </section>
 
+<section id="contact" class="contact-section">
+  <div class="contact-shell">
+    <div class="contact-copy">
+      <span class="contact-eyebrow">Kontakt</span>
+      <h2>Erzähl uns von deinem Vorhaben.</h2>
+      <p>
+        Ob Automatisierung, Sensorik, Dashboard oder Prototyping – wir melden uns mit einem klaren
+        nächsten Schritt zurück.
+      </p>
+
+      <div class="contact-points">
+        <div class="contact-point">
+          <span class="contact-point-label">Antwortfokus</span>
+          <strong>Technisch, schnell, konkret</strong>
+        </div>
+        <div class="contact-point">
+          <span class="contact-point-label">Typische Themen</span>
+          <strong>CPS, Robotik, Telemetrie</strong>
+        </div>
+      </div>
+    </div>
+
+    <form class="contact-card" (ngSubmit)="submitContactForm()" #contactNgForm="ngForm">
+      <div class="contact-grid">
+        <label class="field">
+          <span>Name *</span>
+          <input
+            type="text"
+            name="contact-name"
+            [ngModel]="contactForm().name"
+            (ngModelChange)="updateContactField('name', $event)"
+            placeholder="Max Mustermann"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span>E-Mail *</span>
+          <input
+            type="email"
+            name="contact-email"
+            [ngModel]="contactForm().email"
+            (ngModelChange)="updateContactField('email', $event)"
+            placeholder="name@unternehmen.de"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span>Firma</span>
+          <input
+            type="text"
+            name="contact-company"
+            [ngModel]="contactForm().firma"
+            (ngModelChange)="updateContactField('firma', $event)"
+            placeholder="Unternehmen"
+          />
+        </label>
+
+        <label class="field">
+          <span>Thema</span>
+          <input
+            type="text"
+            name="contact-topic"
+            [ngModel]="contactForm().thema"
+            (ngModelChange)="updateContactField('thema', $event)"
+            placeholder="z. B. Dashboard, Automatisierung, Prototyp"
+          />
+        </label>
+      </div>
+
+      <label class="field field-full">
+        <span>Nachricht *</span>
+        <textarea
+          name="contact-message"
+          rows="6"
+          [ngModel]="contactForm().nachricht"
+          (ngModelChange)="updateContactField('nachricht', $event)"
+          placeholder="Beschreibe kurz dein Projekt, deine Anforderungen oder deinen aktuellen Stand."
+          required
+        ></textarea>
+      </label>
+
+      @if (contactError()) {
+        <p class="contact-feedback contact-feedback-error">{{ contactError() }}</p>
+      }
+
+      @if (contactSuccess()) {
+        <p class="contact-feedback contact-feedback-success">{{ contactSuccess() }}</p>
+      }
+
+      <div class="contact-actions">
+        <button type="submit" class="contact-submit" [disabled]="isSubmittingContact()">
+          {{ isSubmittingContact() ? 'Wird gesendet ...' : 'Anfrage senden' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+
 <section class="contact-section bg-black" id="signup">
     <div class="container px-4 px-lg-5">
         <div class="social d-flex justify-content-center">

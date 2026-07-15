@@ -1,15 +1,17 @@
-import { Component,
-  inject,
-  OnInit,
-  signal,
-  ViewChild,
-  ElementRef,
+import {
   AfterViewInit,
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
   PLATFORM_ID,
-  HostListener 
+  ViewChild,
+  inject,
+  signal
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 interface Projekt {
   id: number;
@@ -18,112 +20,167 @@ interface Projekt {
   beschreibung: string;
 }
 
+type ContactFormModel = {
+  name: string;
+  email: string;
+  firma: string;
+  thema: string;
+  nachricht: string;
+};
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule], 
+  imports: [CommonModule, FormsModule],
   templateUrl: './home.html',
   styleUrl: './home.scss'
 })
 export class Home implements OnInit, AfterViewInit {
-  
-  protected readonly title = signal('CPS-Projekt');
-  protected readonly projekte = signal<Projekt[]>([]);
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
 
-  // Signals für die Navbar-Zustände
+  protected readonly title = signal('CPS-Projekt');
+  protected readonly projekte = signal<Projekt[]>([]);
+
   readonly isNavbarShrunk = signal(false);
   readonly activeSection = signal('page-top');
 
-  // Signals für den Intro Splash Screen
   protected readonly isIntroVisible = signal(true);
   protected readonly introSuffix = signal('');
 
-  @ViewChild('bgVideo') videoRef!: ElementRef<HTMLVideoElement>;
+  readonly isSubmittingContact = signal(false);
+  readonly contactSuccess = signal('');
+  readonly contactError = signal('');
 
-  @HostListener('window:scroll', [])
+  readonly contactForm = signal<ContactFormModel>({
+    name: '',
+    email: '',
+    firma: '',
+    thema: '',
+    nachricht: ''
+  });
+
+  @ViewChild('bgVideo') videoRef?: ElementRef<HTMLVideoElement>;
+
+  @HostListener('window:scroll')
   onWindowScroll(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0;
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-      // 1. Navbar-Hintergrund umschalten (nach 100 Pixeln Scrollweg)
-      this.isNavbarShrunk.set(scrollPosition > 100);
+    const scrollPosition = window.scrollY || document.documentElement.scrollTop || 0;
+    this.isNavbarShrunk.set(scrollPosition > 100);
 
-      // 2. Eigener, schlanker Scrollspy für die Menüpunkte
-      const sections = ['about', 'projects', 'signup'];
-      let current = 'page-top';
+    const sections = ['page-top', 'about', 'projects', 'contact'];
+    let current = 'page-top';
 
-      for (const sectionId of sections) {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          // 80 Pixel Puffer (z.B. für die Höhe der Navbar)
-          // const elementTop = element.offsetTop - 80; 
-          // if (scrollPosition >= elementTop) {
-          //   current = sectionId;
-          // }
+    for (const sectionId of sections) {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        const elementTop = element.offsetTop - 140;
+        if (scrollPosition >= elementTop) {
+          current = sectionId;
         }
       }
-      this.activeSection.set(current);
     }
+
+    this.activeSection.set(current);
   }
 
   ngOnInit(): void {
-    // 1. Daten laden vom Backend
-    this.http.get<Projekt[]>('http://localhost/cps-api/get_projekte.php')
-      .subscribe({
-        next: (daten) => {
-          this.projekte.set(daten);
-        },
-        error: (fehler) => {
-          console.error('Fehler beim Laden der Daten aus der Datenbank:', fehler);
-        }
-      });
+    this.http.get<Projekt[]>('http://localhost/cps-api/get_projekte.php').subscribe({
+      next: (daten) => {
+        this.projekte.set(daten);
+      },
+      error: (fehler) => {
+        console.error('Fehler beim Laden der Daten aus der Datenbank:', fehler);
+      }
+    });
 
-    // 2. Intro-Animation steuern
-    if (isPlatformBrowser(this.platformId)) {
-      const words = ['fast', 'forward', 'better', 'botics'];
-      let currentIndex = -1;
-
-      const introInterval = setInterval(() => {
-        currentIndex++;
-        
-        if (currentIndex < words.length) {
-          this.introSuffix.set(words[currentIndex]);
-        }
-
-        if (currentIndex === words.length - 1) {
-          clearInterval(introInterval);
-          
-          setTimeout(() => {
-            this.isIntroVisible.set(false);
-          }, 1000); 
-        }
-      }, 500);
+    if (!isPlatformBrowser(this.platformId)) {
+      this.isIntroVisible.set(false);
+      return;
     }
+
+    const words = ['fast', 'forward', 'better', 'botics'];
+    let currentIndex = -1;
+
+    const introInterval = setInterval(() => {
+      currentIndex++;
+
+      if (currentIndex < words.length) {
+        this.introSuffix.set(words[currentIndex]);
+      }
+
+      if (currentIndex === words.length - 1) {
+        clearInterval(introInterval);
+
+        setTimeout(() => {
+          this.isIntroVisible.set(false);
+        }, 1000);
+      }
+    }, 500);
   }
 
   ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const video = this.videoRef?.nativeElement;
-      if (video) {
-        video.muted = true;        // explizit setzen – umgeht die Attribut-Unsicherheit
-        video.defaultMuted = true; // zusätzliche Absicherung
-        video.playbackRate = 0.5;
-
-        video.play().catch(error => {
-          console.warn('Browser blockiert Autoplay trotz Stummschaltung.', error);
-        });
-      }
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
     }
+
+    const video = this.videoRef?.nativeElement;
+    if (!video) {
+      return;
+    }
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playbackRate = 0.5;
+
+    video.play().catch((error) => {
+      console.warn('Browser blockiert Autoplay trotz Stummschaltung.', error);
+    });
   }
 
   handleVideoEnded(video: HTMLVideoElement): void {
-    if (isPlatformBrowser(this.platformId)) {
-      console.log('muted:', video.muted, 'readyState:', video.readyState);
-      setTimeout(() => {
-        video.play().catch(() => {});
-      }, 3000);
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
     }
+
+    setTimeout(() => {
+      video.play().catch(() => {});
+    }, 3000);
+  }
+
+  updateContactField<K extends keyof ContactFormModel>(field: K, value: ContactFormModel[K]): void {
+    this.contactForm.set({
+      ...this.contactForm(),
+      [field]: value
+    });
+  }
+
+  submitContactForm(): void {
+    this.contactSuccess.set('');
+    this.contactError.set('');
+
+    const form = this.contactForm();
+
+    if (!form.name.trim() || !form.email.trim() || !form.nachricht.trim()) {
+      this.contactError.set('Bitte fülle mindestens Name, E-Mail und Nachricht aus.');
+      return;
+    }
+
+    this.isSubmittingContact.set(true);
+
+    setTimeout(() => {
+      this.isSubmittingContact.set(false);
+      this.contactSuccess.set('Vielen Dank. Deine Anfrage wurde vorbereitet und kann jetzt ans Backend angebunden werden.');
+      this.contactForm.set({
+        name: '',
+        email: '',
+        firma: '',
+        thema: '',
+        nachricht: ''
+      });
+    }, 700);
   }
 }
